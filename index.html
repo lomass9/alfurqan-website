@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Study Architect | مخطط الدراسة الذكي</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="bg-glow"></div>
+    <main class="app">
+      <header class="hero card">
+        <p class="chip">نسخة أذكى ✨</p>
+        <h1>AI Study Architect</h1>
+        <p>
+          مخطط دراسي تفاعلي يبني لك خطة أسبوعية واقعية حسب مستواك، صعوبة المواد،
+          والاختبارات القريبة — مو مجرد جدول ثابت.
+        </p>
+      </header>
+
+      <section class="card">
+        <h2>1) الملف الدراسي</h2>
+        <form id="plannerForm">
+          <div class="grid two">
+            <label>
+              اسم الطالب
+              <input type="text" id="studentName" placeholder="مثال: أحمد" required />
+            </label>
+
+            <label>
+              بداية الخطة
+              <input type="date" id="startDate" required />
+            </label>
+
+            <label>
+              هدف الأسبوع
+              <input
+                type="text"
+                id="goal"
+                placeholder="رفع الرياضيات + تجهيز اختبار الكيمياء"
+                required
+              />
+            </label>
+
+            <label>
+              ساعات الدراسة يوميًا
+              <input type="number" id="dailyHours" min="1" max="10" value="3" required />
+            </label>
+          </div>
+
+          <div class="subject-head">
+            <h3>المواد</h3>
+            <button class="ghost" type="button" id="addSubjectBtn">+ إضافة مادة</button>
+          </div>
+          <div id="subjectsContainer" class="subjects"></div>
+
+          <h2>2) أسلوبك ووقتك</h2>
+          <div class="grid three">
+            <label>
+              طاقتي الأعلى
+              <select id="energyPeak" required>
+                <option value="morning">الصباح</option>
+                <option value="afternoon">الظهر</option>
+                <option value="evening" selected>المساء</option>
+                <option value="night">الليل</option>
+              </select>
+            </label>
+
+            <label>
+              مدة تركيزي بالدقيقة
+              <input type="number" id="focusMinutes" min="25" max="90" step="5" value="50" required />
+            </label>
+
+            <label>
+              الاستراحة بين الجلسات بالدقيقة
+              <input type="number" id="breakMinutes" min="5" max="20" step="5" value="10" required />
+            </label>
+
+            <label>
+              نمط الخطة
+              <select id="strategy" required>
+                <option value="balanced">متوازن</option>
+                <option value="exam">تركيز اختبارات قريبة</option>
+                <option value="recovery">إنقاذ المواد الضعيفة</option>
+              </select>
+            </label>
+
+            <label>
+              أقصى جلسات في اليوم
+              <input type="number" id="maxSessionsDay" min="1" max="6" value="3" required />
+            </label>
+
+            <label>
+              أيام الفراغ
+              <div class="days" id="freeDays">
+                <label><input type="checkbox" value="0" checked /> الأحد</label>
+                <label><input type="checkbox" value="1" checked /> الإثنين</label>
+                <label><input type="checkbox" value="2" checked /> الثلاثاء</label>
+                <label><input type="checkbox" value="3" checked /> الأربعاء</label>
+                <label><input type="checkbox" value="4" checked /> الخميس</label>
+                <label><input type="checkbox" value="5" /> الجمعة</label>
+                <label><input type="checkbox" value="6" /> السبت</label>
+              </div>
+            </label>
+          </div>
+
+          <button type="submit" class="primary">ابنِ الخطة الذكية</button>
+        </form>
+      </section>
+
+      <section id="resultSection" class="card hidden">
+        <h2>النتيجة الذكية</h2>
+        <p id="summaryText"></p>
+        <div id="insights" class="insights"></div>
+        <h3>خطة الأسبوع</h3>
+        <div id="schedule" class="schedule"></div>
+      </section>
+    </main>
+
+    <template id="subjectTemplate">
+      <article class="subject-row">
+        <label>
+          اسم المادة
+          <input type="text" class="subject-name" placeholder="مثال: رياضيات" required />
+        </label>
+
+        <label>
+          مستواي الحالي (0-100)
+          <input type="number" class="subject-level" min="0" max="100" value="60" required />
+        </label>
+
+        <label>
+          صعوبة المادة (1-5)
+          <input type="number" class="subject-difficulty" min="1" max="5" value="3" required />
+        </label>
+
+        <label>
+          تاريخ الاختبار (اختياري)
+          <input type="date" class="subject-exam" />
+        </label>
+
+        <button type="button" class="danger remove-subject">حذف</button>
+      </article>
+    </template>
+
+    <script src="script.js"></script>
+  </body>
+</html>
