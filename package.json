@@ -1,0 +1,12 @@
+{
+  "name": "ai-study-architect",
+  "version": "1.0.0",
+  "description": "Arabic RTL AI-powered study planner",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

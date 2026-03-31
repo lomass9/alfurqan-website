@@ -21,8 +21,7 @@ function daysUntil(dateString) {
   const now = new Date();
   const exam = new Date(dateString);
   if (Number.isNaN(exam.getTime())) return null;
-  const diff = Math.ceil((exam - now) / (1000 * 60 * 60 * 24));
-  return diff;
+  return Math.ceil((exam - now) / (1000 * 60 * 60 * 24));
 }
 
 function subjectPriority(subject, strategy) {
@@ -45,11 +44,7 @@ function subjectPriority(subject, strategy) {
 }
 
 function allocateSessions(subjects, totalSessions, strategy) {
-  const scores = subjects.map((subject) => ({
-    ...subject,
-    score: subjectPriority(subject, strategy)
-  }));
-
+  const scores = subjects.map((subject) => ({ ...subject, score: subjectPriority(subject, strategy) }));
   const totalScore = scores.reduce((acc, s) => acc + s.score, 0);
   let assigned = 0;
 
@@ -81,11 +76,7 @@ function buildQueue(allocation) {
   const queue = [];
   allocation.forEach((subject) => {
     for (let i = 0; i < subject.sessions; i += 1) {
-      queue.push({
-        name: subject.name,
-        level: subject.level,
-        daysToExam: subject.daysToExam
-      });
+      queue.push({ name: subject.name, level: subject.level, daysToExam: subject.daysToExam });
     }
   });
 
@@ -118,8 +109,8 @@ function distributeSchedule({ freeDays, startDate, slots, sessionsPerDay, queue 
 
     for (let i = 0; i < sessionsPerDay; i += 1) {
       if (!queue.length) break;
-
       let candidate = queue[queueIndex % queue.length];
+
       if (candidate.name === lastSubject && queue.length > 1) {
         queueIndex += 1;
         candidate = queue[queueIndex % queue.length];
@@ -138,35 +129,14 @@ function distributeSchedule({ freeDays, startDate, slots, sessionsPerDay, queue 
       queueIndex %= queue.length;
     }
 
-    schedule.push({
-      dayName: dayNames[dayIndex],
-      date: date.toLocaleDateString('ar-EG'),
-      sessions
-    });
+    schedule.push({ dayName: dayNames[dayIndex], date: date.toLocaleDateString('ar-EG'), sessions });
   });
 
   return schedule;
 }
 
-function renderInsights(allocation, totalSessions, focusMinutes, breakMinutes, strategy) {
-  const top = allocation[0];
-  const urgent = allocation
-    .filter((s) => s.daysToExam !== null && s.daysToExam <= 10)
-    .map((s) => s.name);
-
-  const messages = [
-    `أولوية هذا الأسبوع: ${top.name} (${top.sessions} جلسة من أصل ${totalSessions}).`,
-    `إيقاعك المثالي: ${focusMinutes} دقيقة تركيز + ${breakMinutes} دقائق راحة.`,
-    `نمط الخطة المختار: ${
-      strategy === 'balanced' ? 'متوازن' : strategy === 'exam' ? 'اختبارات' : 'إنقاذ المواد الضعيفة'
-    }.`
-  ];
-
-  if (urgent.length) {
-    messages.push(`مواد قريبة الاختبار وتحتاج متابعة يومية: ${urgent.join('، ')}.`);
-  }
-
-  insightsBox.innerHTML = messages.map((m) => `<div class="insight">${m}</div>`).join('');
+function renderInsights(insights) {
+  insightsBox.innerHTML = insights.map((m) => `<div class="insight">${m}</div>`).join('');
 }
 
 function renderSchedule(schedule) {
@@ -202,16 +172,13 @@ function addSubjectRow(initial = {}) {
   row.querySelector('.subject-difficulty').value = initial.difficulty ?? 3;
   row.querySelector('.subject-exam').value = initial.examDate || '';
 
-  row.querySelector('.remove-subject').addEventListener('click', () => {
-    row.remove();
-  });
+  row.querySelector('.remove-subject').addEventListener('click', () => row.remove());
 
   subjectsContainer.appendChild(fragment);
 }
 
 function collectSubjects() {
-  const rows = Array.from(document.querySelectorAll('.subject-row'));
-  return rows
+  return Array.from(document.querySelectorAll('.subject-row'))
     .map((row) => ({
       name: row.querySelector('.subject-name').value.trim(),
       level: Number(row.querySelector('.subject-level').value),
@@ -219,15 +186,49 @@ function collectSubjects() {
       examDate: row.querySelector('.subject-exam').value
     }))
     .filter((subject) => subject.name)
-    .map((subject) => ({
-      ...subject,
-      daysToExam: daysUntil(subject.examDate)
-    }));
+    .map((subject) => ({ ...subject, daysToExam: daysUntil(subject.examDate) }));
+}
+
+function createFallbackPlan(payload) {
+  const allocation = allocateSessions(payload.subjects, payload.totalSessions, payload.strategy);
+  const queue = buildQueue(allocation);
+  const schedule = distributeSchedule({
+    freeDays: payload.freeDays.map((d) => d.index),
+    startDate: payload.startDate,
+    slots: payload.slots,
+    sessionsPerDay: payload.sessionsPerDay,
+    queue
+  });
+
+  return {
+    summary: `تم إنشاء الخطة محليًا لأن اتصال الذكاء الاصطناعي غير متاح الآن.`,
+    insights: [
+      `أولوية هذا الأسبوع: ${allocation[0].name} (${allocation[0].sessions} جلسة).`,
+      `إيقاع الدراسة: ${payload.focusMinutes} دقيقة تركيز + ${payload.breakMinutes} دقائق راحة.`,
+      'هذه نسخة احتياطية، وعند تشغيل السيرفر بالمفتاح ستتحول لخطة AI كاملة.'
+    ],
+    schedule
+  };
+}
+
+async function generateAIPlan(payload) {
+  const response = await fetch('/api/plan', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error || 'AI request failed');
+  }
+
+  return response.json();
 }
 
 addSubjectBtn.addEventListener('click', () => addSubjectRow());
 
-plannerForm.addEventListener('submit', (event) => {
+plannerForm.addEventListener('submit', async (event) => {
   event.preventDefault();
 
   const studentName = document.getElementById('studentName').value.trim();
@@ -256,22 +257,33 @@ plannerForm.addEventListener('submit', (event) => {
   const sessionBlock = focusMinutes + breakMinutes;
   const sessionsPerDay = Math.max(1, Math.min(maxSessionsDay, Math.floor((dailyHours * 60) / sessionBlock)));
   const totalSessions = Math.max(sessionsPerDay * freeDays.length, subjects.length);
-
-  const allocation = allocateSessions(subjects, totalSessions, strategy);
-  const queue = buildQueue(allocation);
   const slots = peakSlot[energyPeak].slice(0, sessionsPerDay);
 
-  const schedule = distributeSchedule({
-    freeDays,
+  const payload = {
+    studentName,
+    goal,
     startDate,
-    slots,
+    strategy,
+    focusMinutes,
+    breakMinutes,
     sessionsPerDay,
-    queue
-  });
+    totalSessions,
+    slots,
+    subjects,
+    freeDays: freeDays.map((index) => ({ index, dayName: dayNames[index] }))
+  };
 
-  summaryText.textContent = `رائع ${studentName}، بنينا خطة ${freeDays.length} أيام لهدفك: "${goal}" مع ${totalSessions} جلسة موزعة بذكاء حسب الأولوية.`;
-  renderInsights(allocation, totalSessions, focusMinutes, breakMinutes, strategy);
-  renderSchedule(schedule);
+  let plan;
+  try {
+    plan = await generateAIPlan(payload);
+  } catch (error) {
+    console.warn('AI unavailable, fallback mode:', error.message);
+    plan = createFallbackPlan(payload);
+  }
+
+  summaryText.textContent = plan.summary || `رائع ${studentName}، هذه خطة دراسية مقترحة.`;
+  renderInsights(plan.insights || []);
+  renderSchedule(plan.schedule || []);
 
   resultSection.classList.remove('hidden');
   resultSection.scrollIntoView({ behavior: 'smooth' });

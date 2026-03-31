@@ -74,6 +74,19 @@ body {
   line-height: 1.8;
 }
 
+.hero small {
+  display: block;
+  margin-top: 0.6rem;
+  color: #334155;
+}
+
+.hero code {
+  background: #eef2ff;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 6px;
+  padding: 0.1rem 0.35rem;
+}
+
 .chip {
   display: inline-block;
   padding: 0.35rem 0.85rem;
