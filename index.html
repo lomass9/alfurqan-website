@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Poox — Bluff & Burst</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-glow glow-a"></div>
+    <div class="bg-glow glow-b"></div>
+
+    <main class="app">
+      <header class="hero card">
+        <p class="kicker">Group Party Game</p>
+        <h1>Poox</h1>
+        <p class="subtitle">Bluff your way through weird prompts, then vote to pop the biggest fib.</p>
+      </header>
+
+      <section class="card how-to">
+        <h2>How to play</h2>
+        <ol>
+          <li>Choose 3+ players and pass one device around.</li>
+          <li>Each round, one player becomes the <strong>Spotlight</strong>.</li>
+          <li>The Spotlight secretly picks one truth and one bluff from a prompt.</li>
+          <li>Everyone votes which statement is fake. Correct votes score points.</li>
+          <li>First player to reach the target score wins!</li>
+        </ol>
+      </section>
+
+      <section class="card controls">
+        <h2>Game setup</h2>
+        <div class="form-row">
+          <label for="players">Players (comma separated)</label>
+          <input id="players" type="text" placeholder="Amina, Sami, Zayd, Noor" />
+        </div>
+        <div class="form-row inline">
+          <label for="targetScore">Target score</label>
+          <input id="targetScore" type="number" min="3" max="25" value="8" />
+          <button id="startBtn">Start Poox</button>
+        </div>
+      </section>
+
+      <section id="gameArea" class="card game hidden">
+        <div class="round-head">
+          <h2 id="roundTitle">Round 1</h2>
+          <p id="spotlightPlayer"></p>
+        </div>
+
+        <p id="promptText" class="prompt"></p>
+
+        <div class="choices">
+          <button class="choice" data-choice="A"></button>
+          <button class="choice" data-choice="B"></button>
+        </div>
+
+        <p id="roundResult" class="result"></p>
+
+        <div class="actions">
+          <button id="revealBtn" class="secondary">Reveal Fake</button>
+          <button id="nextBtn" class="hidden">Next Round</button>
+        </div>
+      </section>
+
+      <section id="scoreboard" class="card hidden">
+        <h2>Scoreboard</h2>
+        <ul id="scoreList"></ul>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
